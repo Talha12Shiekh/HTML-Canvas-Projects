@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Making Circular effect</title>
+    <style>
+      body {
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+  </body>
+  <script>
+    let canvas = document.querySelector("canvas");
+    let c = canvas.getContext("2d");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    class Ball {
+      constructor(x, y, color, radius) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = radius;
+        this.radians = 0;
+        this.velocity = 0.10;
+
+        this.update = () => {
+          this.radians += this.velocity;
+          this.x = x + Math.cos(this.radians) * 100;
+          this.y = y + Math.sin(this.radians) * 100;
+          this.draw();
+        };
+      }
+      draw() {
+        c.beginPath();
+        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+        c.fillStyle = this.color;
+        c.fill();
+      }
+    }
+
+    let balls = [];
+
+    let NUMBER_OF_CIRCLES = 8;
+
+    let COLOR = "red";
+
+    let RADIUS = 10;
+
+    function init() {
+      balls = [];
+
+      for (let i = 0; i < 8; i++) {
+        balls.push(
+          new Ball(canvas.width / 2, canvas.height / 2, COLOR, RADIUS)
+        );
+      }
+    }
+
+    init();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      c.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      balls.forEach((bal) => bal.update());
+    }
+
+    animate();
+  </script>
+</html>
