@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coding Rectange collision</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+  </body>
+  <script>
+    const $ = (element) => document.querySelector(element);
+    let canvas = $("canvas");
+
+    const {innerWidth:windowWidth,innerHeight:windowHeight} = window;
+
+    canvas.width = windowWidth;
+
+    canvas.height = windowHeight;
+
+    let c = canvas.getContext("2d");
+
+    const mouse = {
+        x : windowWidth / 2,
+        y : windowHeight / 2
+    }
+
+
+    document.addEventListener("mousemove",e => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    })
+
+    class Rectangle {
+        constructor(x,y,color,width,height){
+            this.x = x ;
+            this.y = y ;
+            this.color = color ;
+            this.width = width;
+            this.height = height;
+        }
+        draw(){
+            c.beginPath();
+            c.fillStyle = this.color;
+            c.fillRect(this.x,this.y,this.width,this.height)
+        }
+        update(){
+            this.draw()
+        }
+    }
+
+    const widthHeight = 100;
+
+    let rect1 = new Rectangle(windowWidth/2,windowHeight/2,"red",widthHeight,widthHeight);
+
+    let rect2 = new Rectangle(mouse.x,mouse.y,"blue",widthHeight,widthHeight)
+
+    function animate(){
+        requestAnimationFrame(animate);
+        c.clearRect(0,0,windowWidth,windowHeight);
+        rect1.update()
+        rect2.x = mouse.x;
+        rect2.y = mouse.y;
+
+        if((rect2.x + rect2.width >= rect1.x )
+        && (rect2.x <= rect1.x + rect1.width) && (rect2.y + rect2.height >= rect1.y) && (rect2.y <= rect1.y + rect1.height)){
+            rect1.color = "yellow"
+        }else {
+            rect1.color = "red"
+        }
+        rect2.update();
+
+    }
+
+    animate()
+  </script>
+</html>

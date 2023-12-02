@@ -1,0 +1,38 @@
+<html>
+<head>
+<title>Making Drawing app</title>
+</head>
+<body>
+    <canvas></canvas>
+</body>
+<script>
+let canvas = document.querySelector("canvas");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+let ctx = canvas.getContext("2d");
+let isDrawing = false;
+
+let currentPositions = {
+    x:undefined,
+    y:undefined
+}
+
+document.addEventListener("mousedown",e => {
+    ctx.beginPath();
+    ctx.lineWidth = 5;
+    isDrawing = true;
+    currentPositions.x = e.offsetX;
+    currentPositions.y = e.offsetY;
+})
+document.addEventListener("mousemove",e => {
+    if(!isDrawing) return;
+    // ctx.lineTo(e.offsetX,e.offsetY);
+    console.log(currentPositions.x , e.offsetX)
+    ctx.fillRect(e.offsetX,e.offsetY,currentPositions.x - e.offsetX ,currentPositions.y - e.offsetY)
+    // ctx.arc(e.offsetX,e.offsetY,currentPositions.x - e.offsetX,0,Math.PI * 2,false)
+    // ctx.fill()
+});
+
+document.addEventListener("mouseup",() => isDrawing = false );
+</script>
+</html>

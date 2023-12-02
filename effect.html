@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+        body{
+          overflow: hidden;
+        }
+        *{
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+
+    <script>
+      let canvas = document.querySelector("canvas"),
+        ctx = canvas.getContext("2d");
+
+
+        window.addEventListener("resize",() => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            init()
+        });
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+      let mouseObject = {
+        x:undefined,
+        y:undefined
+      }
+
+      let colors = [
+        "red",
+        "blue",
+        "green",
+        "pink",
+        "purple",
+        "yellow"
+      ]
+
+      function Circle(x, y, dx, dy, radius) {
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.dy = dy;
+        this.radius = radius; 
+        this.minRadius = radius;
+        
+        let randomColor = Math.floor(Math.random() * colors.length)
+
+        this.draw = () => {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+          ctx.fillStyle = colors[randomColor]
+          ctx.fill()
+        //   ctx.stroke();
+          this.update();
+
+        };
+
+        this.update = () => {
+          if (
+            this.x + this.radius > window.innerWidth ||
+            this.x - this.radius < 0
+          ) {
+            this.dx = -this.dx;
+          }
+
+          if (
+            this.y + this.radius > window.innerHeight ||
+            this.y - this.radius < 0
+          ) {
+            this.dy = -this.dy;
+          }
+
+          if((mouseObject.x - this.x < 50) && (mouseObject.x - this.x > -50) && (mouseObject.y - this.y < 50) && (mouseObject.y - this.y > -50)){
+            if(this.radius < 40 ){
+                this.radius += 3
+            }
+          }else if(this.radius > this.minRadius) {
+            this.radius -= 1
+          }
+
+
+
+          this.x += this.dx;
+          this.y += this.dy;
+        };
+      }
+
+      let circles = [];
+
+     
+
+      function init(){
+        circles = []
+        for (let i = 0; i < 800; i++) {
+        let radius = Math.random() * 3 + 1;
+        let diameter = radius * 2;
+        let x = Math.random() * (window.innerWidth - diameter) + radius,
+          y = Math.random() * (window.innerHeight - diameter) + radius,
+          dx = (Math.random() - 0.5) * 3,
+          dy = (Math.random() - 0.5) * 3;
+        let circle = new Circle(x, y, dx, dy, radius);
+        circles.push(circle);
+      }
+      }
+
+      
+
+      // let x = 200,
+      // y = 200,
+      function animate() {
+        requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        // circle.draw()
+
+        circles.forEach(circle => circle.draw())
+      }
+      animate();
+
+      document.addEventListener("mousemove",e => {
+            mouseObject.x = e.x;
+            mouseObject.y = e.y;
+      });
+
+      init()
+    </script>
+  </body>
+</html>

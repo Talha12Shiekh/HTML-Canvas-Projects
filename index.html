@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+        canvas{
+            background:black;
+        }
+        body{
+          overflow: hidden;
+        }
+        *{
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+
+    <script>
+      let canvas = document.querySelector("canvas"),
+        ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      function Circle(x, y, dx, dy, radius) {
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.dy = dy;
+        this.radius = radius;
+
+        var c_x = Math.floor(Math.random() * 256);
+        var c_y = Math.floor(Math.random() * 256);
+        var c_z = Math.floor(Math.random() * 256);
+        var RGBColor = "rgb(" + c_x + "," + c_y + "," + c_z + ")";  
+
+        this.draw = () => {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+          ctx.strokeStyle = "blue";
+          ctx.lineWidth = 10;
+          ctx.shadowColor = RGBColor;
+          ctx.shadowOffsetX = 15;
+          ctx.shadowOffsetY = 15;
+          ctx.shadowBlur = 20;
+          ctx.strokeStyle = RGBColor;
+          ctx.stroke();
+        // ctx.fillStyle = RGBColor
+        //   ctx.fill()
+          this.update();
+
+        };
+
+        this.update = () => {
+          if (
+            this.x + this.radius > window.innerWidth ||
+            this.x - this.radius < 0
+          ) {
+            this.dx = -this.dx;
+          }
+
+          if (
+            this.y + this.radius > window.innerHeight ||
+            this.y - this.radius < 0
+          ) {
+            this.dy = -this.dy;
+          }
+
+          this.x += this.dx;
+          this.y += this.dy;
+        };
+      }
+
+      let circles = [];
+
+      for (let i = 0; i < 20; i++) {
+        let radius = 80;
+        let diameter = radius * 2;
+        let x = Math.random() * (window.innerWidth - diameter) + radius,
+          y = Math.random() * (window.innerHeight - diameter) + radius,
+          dx = (Math.random() - 0.5) * 20,
+          dy = (Math.random() - 0.5) * 20;
+        let circle = new Circle(x, y, dx, dy, radius);
+        circles.push(circle);
+      }
+
+      
+
+      // let x = 200,
+      // y = 200,
+      function animate() {
+        requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        // circle.draw()
+
+        circles.forEach(circle => circle.draw())
+      }
+      animate();
+    </script>
+  </body>
+</html>

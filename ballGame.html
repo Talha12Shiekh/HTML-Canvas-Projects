@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Making Circular effect</title>
+    <style>
+      body {
+        overflow: hidden;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      canvas {
+        background-color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+  </body>
+  <script>
+    let canvas = document.querySelector("canvas");
+    let c = canvas.getContext("2d");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    class Brick {
+      constructor(x, y, color, width, height) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.width = width;
+        this.height = height;
+        this.velocity = { x: 0 };
+      }
+      draw() {
+        c.beginPath();
+        c.fillRect(this.x, this.y, this.width, this.height);
+
+        c.fill();
+      }
+      update() {
+        c.fillStyle = this.color;
+
+        this.x += this.velocity.x;
+
+        if (this.x + this.width > canvas.width) {
+          this.x = canvas.width - this.width;
+        }
+        if (this.x < 0) {
+          this.x = 0;
+        }
+
+        this.draw();
+      }
+    }
+
+    let brickXGap = 10;
+    let brickYGap = 10;
+
+    let bottomSlider = new Brick(
+      canvas.width / 2.3,
+      canvas.height - 20,
+      "lightblue",
+      200,
+      10
+    );
+
+    class Ball {
+      constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.color = "lightblue";
+        this.velocity = { x: 5, y: 5 };
+      }
+      draw() {
+        c.beginPath();
+        c.fillRect(this.x, this.y, this.width, this.height);
+        c.fill();
+      }
+      update(brcks) {
+        c.fillStyle = this.color;
+        this.y += this.velocity.y;
+        this.x += this.velocity.x;
+
+        let ballBottomSide = this.y + this.height;
+        let ballLeftSide = this.x;
+        let ballRightSide = this.x + this.width;
+        let ballTopSide = this.y;
+        let bottomSliderTopSide = bottomSlider.y;
+        let bottomSliderRightSide = bottomSlider.x + bottomSlider.width;
+        let bottomSliderLeftSide = bottomSlider.x;
+
+        if (ballRightSide >= canvas.width || ballLeftSide < 0) {
+          this.velocity.x = -this.velocity.x;
+        }
+        if (ballTopSide < 0) {
+          this.velocity.y = -this.velocity.y;
+        }
+
+        if (
+          ballBottomSide >= bottomSliderTopSide &&
+          ballLeftSide < bottomSliderRightSide &&
+          ballRightSide > bottomSliderLeftSide
+        ) {
+          this.velocity.y = -this.velocity.y;
+        }
+
+        for (let i = 0; i < brcks.length; i++) {
+          if (
+            ballTopSide <= brcks[i].y + brcks[i].height &&
+            ballRightSide > brcks[i].x &&
+            ballLeftSide < brcks[i].x + brcks[i].width
+          ) {
+            brcks.splice(i, 1);
+            this.velocity.y = -this.velocity.y;
+            ball.velocity.x += 1;
+            ball.velocity.y += 1
+          }
+        }
+        // brcks.forEach((br,i) => {
+        //   if(ballTopSide > br.y && ballBottomSide < br.y + br.height && ballLeftSide < br.x){
+        //     brcks.splice(i,1);
+        //   }
+        // })
+        this.draw();
+      }
+    }
+
+    // canvas.width / 2.3,
+      // canvas.height - 20
+
+    let ball = new Ball(canvas.width / 2,canvas.height - 35, 10, 10);
+
+    let bricks = [];
+
+    function init() {
+      bricks = [];
+      let numRows = 3; // Number of rows
+
+      for (let j = 0; j < numRows; j++) {
+        for (let i = 0; i < 5; i++) {
+          let brickWidth = 250;
+          // debugger;
+          let brickHeight = 50;
+          // used to add constant spaces in the bricks as the brickXGap + i will increment each brickGap and by multiplying it by brickWidth we insure that it is placed with some distance at the right and the gap is added to the brick width to place the gap b/w the two bricks
+          let newX = brickXGap + i * (brickWidth + brickXGap);
+          let newY = 10 + j * (brickHeight + brickYGap);
+
+          bricks.push(
+            new Brick(newX + 10, newY, "lightblue", brickWidth, brickHeight)
+          );
+        }
+      }
+    }
+
+    init();
+
+    addEventListener("keydown", (e) => {
+      const SPEED = 8;
+      switch (e.key) {
+        case "ArrowLeft": {
+          bottomSlider.velocity.x = -SPEED;
+          break;
+        }
+        case "ArrowRight": {
+          bottomSlider.velocity.x = SPEED;
+          break;
+        }
+      }
+    });
+
+    addEventListener("keyup", () => {
+      bottomSlider.velocity.x = 0;
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      c.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      bottomSlider.update();
+      ball.update(bricks);
+
+      bricks.forEach((brick) => {
+        brick.update();
+      });
+    }
+
+    animate();
+  </script>
+</html>

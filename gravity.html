@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Making Gravity effect using HTML canvas</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+  </body>
+  <script>
+    const canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+
+    const GRAVITY = 1;
+    const FRICTION = 0.99;
+
+    const COLORS = [
+        "red",
+        "blue",
+        "green",
+        "pink",
+        "orange"
+    ];
+
+    
+    let ball;
+    let ballArray = []
+
+    
+    function getRandomValue(min,max){
+        return Math.floor(Math.random() * (max - min + 1) + min)
+    }
+
+   addEventListener("click",() => init())
+
+    const getRandomColor = () => {
+        return Math.floor(Math.random() * COLORS.length)
+    }
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let mousePosition = {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+    };
+
+    document.addEventListener("mousemove", (e) => {
+      mousePosition.x = e.clientX;
+      mousePosition.y = e.clientY;
+    });
+
+    class Ball {
+      constructor(x, y, radius, color,dx,dy) {
+        this.x = x; // for the x position of the ball
+        this.y = y; // for the y position of the ball
+        this.radius = radius; // for the radius  of the ball
+        this.color = color; // for the color  of the ball
+        this.dy = dy // for the x speed  of the ball
+        this.dx = dx // for the x speed  of the ball
+
+        // the function to update the ball position 
+        this.update = () => {
+            // the condition that checks that if the position of the ball is reaching the bottom of the screen than move it upwards 
+            if(this.y + this.radius + this.dy > window.innerHeight){
+                // adding friction because when the ball strikes the ground its speed becomes lower
+                this.dy = -this.dy * FRICTION;
+            }else {
+                // else if the above condition does not satisfies add gravity to it so that it falls vertically downward
+                this.dy += GRAVITY;
+
+            }
+
+            if(this.x + this.radius + this.dx > canvas.width){
+                this.dx = -this.dx * FRICTION
+            }
+
+            if(this.x - this.radius + this.dx < 0){
+                this.dx = -this.dx * FRICTION
+            }
+            // increase the speed of the ball by specific value
+          this.x += this.dx;
+          this.y += this.dy;
+          this.draw();
+        };
+
+        this.draw = () => {
+            ctx.beginPath();
+            ctx.arc(this.x,this.y,this.radius,0,Math.PI * 2,true);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            ctx.stroke()
+        };
+      }
+    }
+
+    window.addEventListener("resize", () => {
+      
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      init();
+    });
+
+    init();
+
+    function init() {
+        ballArray = []
+        for (let i = 0; i < 200; i++) {
+            let radius = 30;
+
+            let randomX = getRandomValue(30,canvas.width - radius);
+
+            let randomY = getRandomValue(0,canvas.height - radius);
+
+            let randomColor = COLORS[getRandomColor()];
+
+            let randomXSpeed = getRandomValue(-2,2);
+
+            let randomYSpeed = getRandomValue(-2,2);
+
+            ballArray.push(ball = new Ball(randomX,randomY,radius,randomColor,randomXSpeed,randomYSpeed))
+        }
+        
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      ctx.beginPath();
+
+      ballArray.forEach(ball => ball.update())
+    }
+
+    animate();
+  </script>
+</html>

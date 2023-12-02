@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Making bouncing ball</title>
+    <style>
+        body{
+            overflow: hidden;
+            margin: 0;
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+    <canvas></canvas>
+</body>
+<script>  
+let canvas = document.querySelector("canvas");
+let c = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const FRICTION = 0.99;
+
+class Ball{
+    constructor(x,y,color,radius){
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = radius;
+        this.dy = 8;
+    }
+    draw(){
+        c.beginPath();
+        c.arc(this.x,this.y,this.radius,0,Math.PI * 2,true);
+        c.fillStyle = this.color;
+        c.fill()
+    }
+    update(){
+        this.draw();
+
+        this.y += this.dy;
+
+        if(this.y + this.radius + this.dy > window.innerHeight){
+            this.dy = -this.dy * FRICTION
+        }else {
+            this.dy += 1
+        }
+    }
+}
+
+let ball = new Ball(window.innerWidth/2,window.innerHeight/2,"red",50);
+
+function animate(){
+    requestAnimationFrame(animate);
+    c.clearRect(0,0,window.innerWidth,window.innerHeight);
+
+    ball.update()
+}
+
+animate()
+</script>
+</html>

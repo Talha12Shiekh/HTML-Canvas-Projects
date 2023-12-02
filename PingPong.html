@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping Pong Game</title>
+    <style>
+
+        body{
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+
+        }
+        canvas{
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+    <canvas></canvas>
+</body>
+<script>
+    const $ = el => document.querySelector(el);
+
+    let canvas = $("canvas");
+
+    canvas.width = 800;
+    canvas.height = 500;
+
+    let c = canvas.getContext("2d");
+
+    function randomIntFromRange(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    class Ball{
+        constructor(position){
+            this.position = position;
+            this.velocity = {
+                x:randomIntFromRange(-6,6),
+                y:randomIntFromRange(-6,6)
+            }
+            this.width = 10
+        }
+        draw(){
+            c.beginPath();
+            c.fillStyle = "white"
+            c.fillRect(this.position.x,this.position.y,this.width,this.width);
+            c.fill()
+        }
+        update(){
+            this.draw();
+
+            const rightSide = this.position.x + this.width + this.velocity.x;
+            const leftSide = this.position.x  + this.velocity.x;
+            const bottomSide = this.position.y + this.width + this.velocity.y;
+            const topSide = this.position.y + this.velocity.y;
+
+            // paddle 2 collison
+            if(rightSide >= paddle2.position.x && bottomSide >= paddle2.position.y && topSide <= paddle2.position.y + paddle2.height){
+                this.velocity.x = -this.velocity.x
+            }
+
+            // paddle 1 collison
+            
+            if(leftSide <= paddle1.position.x + paddle1.width && topSide <= paddle1.position.y + paddle1.height && bottomSide >= paddle1.position.y){
+                this.velocity.x = -this.velocity.x
+            }
+
+            // bottom top check
+            if(bottomSide >= canvas.height || topSide <= 0){
+                this.velocity.y = -this.velocity.y
+            }
+
+            
+
+            this.position.x += this.velocity.x;
+            this.position.y += this.velocity.y;
+        }
+    }
+
+    class Paddle {
+        constructor(position){
+            this.position = position;
+            this.velocity = {
+                x:0,
+                y:0
+            }
+            this.width = 10;
+            this.height = 100;
+        }
+        draw(){
+            c.beginPath();
+            c.fillStyle = "white"
+            c.fillRect(this.position.x,this.position.y,this.width,this.height)
+        }
+        update(){
+            this.draw()
+
+            if(this.position.y + this.velocity.y > 0 && this.position.y + this.velocity.y + this.height < canvas.height){
+                this.position.y += this.velocity.y;
+            }
+
+        }
+    }
+
+    const paddle1 = new Paddle({x:10,y:100})
+    const paddle2 = new Paddle({x:canvas.width - 10 * 2,y:100});
+    let ball = new Ball({x:canvas.width/2,y:canvas.height/2})
+
+   
+
+    function animate(){
+        requestAnimationFrame(animate);
+        c.clearRect(0,0,canvas.width,canvas.height)
+        paddle1.update();
+        paddle2.update();
+
+        ball.update()
+    }
+
+    animate()
+
+    const speed = 6;
+
+    addEventListener("keydown",e => {
+        switch(e.key){
+            case "ArrowDown":{
+                paddle1.velocity.y = speed
+                break;
+            }
+
+            case "ArrowUp" :{
+                paddle1.velocity.y = -speed
+                break;
+            }
+
+            case "s" :{
+                paddle2.velocity.y = speed
+                break;
+            }
+
+            case "w" :{
+                paddle2.velocity.y = -speed
+                break;
+            }
+        }
+    });
+
+
+    addEventListener("keyup",() => {
+        paddle1.velocity.y = 0;
+        paddle2.velocity.y = 0;
+    })
+</script>
+</html>
