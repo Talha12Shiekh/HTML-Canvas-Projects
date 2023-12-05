@@ -27,7 +27,6 @@ document.addEventListener("mousedown",e => {
 document.addEventListener("mousemove",e => {
     if(!isDrawing) return;
     // ctx.lineTo(e.offsetX,e.offsetY);
-    console.log(currentPositions.x , e.offsetX)
     ctx.fillRect(e.offsetX,e.offsetY,currentPositions.x - e.offsetX ,currentPositions.y - e.offsetY)
     // ctx.arc(e.offsetX,e.offsetY,currentPositions.x - e.offsetX,0,Math.PI * 2,false)
     // ctx.fill()

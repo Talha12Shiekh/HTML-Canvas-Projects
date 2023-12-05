@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Making Circular effect</title>
+    <style>
+      body {
+        overflow: hidden;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+  </body>
+  <script type="module">
+    import dat from "https://cdn.skypack.dev/dat.gui";
+
+    let canvas = document.querySelector("canvas");
+    let c = canvas.getContext("2d");
+
+    const gui = new dat.GUI();
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const AMPLITUDE = 100;
+
+    const wave = {
+      y: canvas.height / 2,
+      length: 0.01,
+      amplitude: AMPLITUDE,
+      frequency:0.01
+    };
+
+    const strokeColor = {
+      h:200,
+      s:50,
+      l:50,
+    }
+
+    const backgroundColor = {
+      r:0,
+      g:0,
+      b:0,
+      a:0.01,
+    }
+
+    const waveFolder = gui.addFolder("WaveFolder");
+    waveFolder.add(wave, "y", 0, canvas.height);
+    waveFolder.add(wave, "length", -0.01, 0.01);
+    waveFolder.add(wave, "amplitude", -300, 300);
+    waveFolder.add(wave, "frequency", -0.01, 1);
+    waveFolder.open();
+
+    const strokeFolder = gui.addFolder("strokeFolder");
+    strokeFolder.add(strokeColor, "h", 0, 255);
+    strokeFolder.add(strokeColor, "s",0, 100);
+    strokeFolder.add(strokeColor, "l", 0, 100);
+    
+    const backgroundFolder = gui.addFolder("backgroundFolder");
+    backgroundFolder.add(backgroundColor, "r", 0, 255);
+    backgroundFolder.add(backgroundColor, "g",0, 255);
+    backgroundFolder.add(backgroundColor, "b", 0, 255);
+    backgroundFolder.add(backgroundColor, "a", 0, 1);
+
+    let increment = wave.frequency;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const {r,g,b,a} = backgroundColor;
+      c.fillStyle = `rgba(${r},${g},${b},${a})`
+      c.fillRect(0,0,canvas.width,canvas.height)
+
+      c.beginPath();
+      c.moveTo(0, canvas.height / 2);
+
+      for (let i = 0; i < canvas.width; i++) {
+        // Math.sin(i * 0.01) // to make the sine waves smaller qk agr 1 ,2 3  aisi values hongi to wo jaldi increase hongi or decrease hongi is sai hamain spring sa effect milay ga leking agr smaller value use karain gay to aram sai increase decrease hoga
+        // increment is liye kar rahay hain takay wave apnay ap ko bar bar repeat karay or hamain repetetion wala effect milay
+        c.lineTo(i, wave.y + Math.sin(i * wave.length + increment) * wave.amplitude * Math.sin(increment));
+        //  * Math.sin(increment) to make the wave dynamic osciallating up and down
+      }
+
+      const {h,s,l} = strokeColor;
+
+      // Math.abs to prevent the negative values because hue ranges from 0 to 255
+
+      c.strokeStyle =  `hsl(${Math.abs(h * Math.sin(increment))},${s}%,${l}%)`
+
+      c.stroke();
+
+      increment += wave.frequency
+
+    }
+
+
+    animate();
+
+  </script>
+</html>
