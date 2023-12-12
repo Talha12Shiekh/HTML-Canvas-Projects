@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Making Fireworks</title>
+    <style>
+      body {
+        overflow: hidden;
+        margin:0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+  </body>
+  <script>
+    let canvas = document.querySelector("canvas");
+    let c = canvas.getContext("2d");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let mouse = { x: undefined, y: undefined };
+
+    const gravity = 0.01;
+    const friction = 0.99;
+
+    class Particle {
+      constructor(x, y, color, radius, velocity) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = radius;
+        this.velocity = velocity;
+        this.alpha = 1;
+      }
+      draw() {
+        c.save();
+        c.globalAlpha = this.alpha;
+        c.beginPath();
+        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+        c.fillStyle = this.color;
+        c.fill();
+        c.restore()
+      }
+      update() {
+        // Without gravity, particles would move in a straight line based on their initial velocity. The addition of gravity causes the particles to arc downward over time, creating a more natural and visually appealing motion, especially for the falling debris of a firework.
+
+        this.velocity.y += gravity;
+        this.velocity.x *= friction;
+        this.velocity.y *= friction;
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+        this.alpha -= 0.005;
+        this.draw();
+      }
+    }
+
+    let particles = [];
+
+    function init() {
+      particles = [];
+    }
+
+    init();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      c.fillStyle = "rgba(0,0,0,0.05)"
+      c.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+      particles.forEach((particle,index) => {
+        if(particle.alpha > 0){
+            particle.update();
+        }else {
+            particles.splice(index,1)
+        }
+      });
+    }
+
+    let particlesCount = 200;
+
+    addEventListener("click", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+
+      let angleIncrement = (Math.PI * 2) / particlesCount;
+
+
+      for (let i = 0; i < particlesCount; i++) {
+
+        let randomColor = Math.random() * 360;
+
+        let velocityObject = {
+            // in this way the velocity of every particle will increase according to its position that will give us a circle effect using Math.sin and Math.cos
+          x: Math.cos(angleIncrement * i) * Math.random() * 12,
+          y: Math.sin(angleIncrement * i) * Math.random() * 12,
+        };
+
+        let singleParticle = new Particle(
+          mouse.x,
+          mouse.y,
+          `hsl(${randomColor},50%,50%)`,
+          10,
+          velocityObject
+        );
+
+        particles.push(singleParticle);
+      }
+    });
+
+    animate();
+  </script>
+</html>

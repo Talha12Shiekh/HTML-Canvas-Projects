@@ -20,6 +20,13 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    let mouse = {x:undefined,y:undefined}
+
+    addEventListener("mousemove",e => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    })
+
     class Object {
         constructor(x,y,color,radius){
             this.x = x;
@@ -54,6 +61,8 @@
     function animate(){
         requestAnimationFrame(animate)
         c.clearRect(0,0,window.innerWidth,window.innerHeight);
+        c.font = "30px sans-serif"
+        c.fillText("CANVAS BOILER PLATE",mouse.x,mouse.y);
 
         object.update()
     }
