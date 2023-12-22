@@ -1,72 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Making Particle tunnel effect</title>
     <style>
-        body{
-            overflow: hidden;
-        }
+      body {
+        overflow: hidden;
+        margin:0;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <canvas></canvas>
-</body>
-<script>
+  </body>
+  <script>
     let canvas = document.querySelector("canvas");
     let c = canvas.getContext("2d");
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    let mouse = {x:undefined,y:undefined}
+    let mouse = { x: undefined, y: undefined };
 
-    addEventListener("mousemove",e => {
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-    })
+    addEventListener("mousemove", (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
 
-    class Object {
-        constructor(x,y,color,radius){
-            this.x = x;
-            this.y = y;
-            this.color = color;
-            this.radius = radius;
-        }
-        draw(){
-            c.beginPath();
-            c.arc(this.x,this.y,this.radius,0,Math.PI * 2,true);
-            c.fillStyle = this.color;
-            c.fill()
-        }
-        update(){
-            this.draw()
-        }
+    class Particle {
+      constructor(x, y, color, radius, velocity) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = radius;
+        this.velocity = velocity;
+        this.tll = 1000;
+      }
+      draw() {
+        c.beginPath();
+        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+        c.fillStyle = this.color;
+        c.fill();
+      }
+      update() {
+        this.draw();
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+        this.tll--;
+      }
     }
 
-    let object = new Object();
+    let particles = [];
 
-    let objects = [];
+    let particlesCount = 50;
 
-    function init(){
-        objects = [];
-        for (let i = 0; i < objects.length; i++) {
-            
+    // let radius = 150;
+
+    let hue = 0;
+    let hueRadians = 0;
+
+    function init() {
+      particles = [];
+      for (let i = 0; i < particlesCount; i++) {
+        let radian = (Math.PI * 2) / particlesCount;
+        hue = Math.sin(hueRadians);
+        let x = canvas.width / 2;
+        let y = canvas.height / 2;
+        particles.push(
+          new Particle(x, y, `hsl(${Math.abs(hue * 360)},50%,50%)`, 10, {
+            x: Math.cos(radian * i),
+            y: Math.sin(radian * i),
+          })
+        );
+      }
+      hueRadians += 0.01;
+    }
+
+    function generateRing(){
+        setInterval(generateRing,200)
+        for (let i = 0; i < particlesCount; i++) {
+        let radian = (Math.PI * 2) / particlesCount;
+        let x = mouse.x;
+        let y = mouse.y;
+        particles.push(
+          new Particle(x, y, `hsl(0,50%,50%)`, 10, {
+            x: Math.cos(radian * i),
+            y: Math.sin(radian * i),
+          })
+        );
+      }
+    }
+
+    generateRing()
+
+    init();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      c.fillStyle = "rgba(0,0,0,.1)"
+      c.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+      particles.forEach((p,index) => {
+        if(p.tll < 0 ){
+            particles.splice(index,1)
+        }else {
+            p.update()
         }
+      });
     }
 
-    init()
-
-    function animate(){
-        requestAnimationFrame(animate)
-        c.clearRect(0,0,window.innerWidth,window.innerHeight);
-        c.font = "30px sans-serif"
-        c.fillText("CANVAS BOILER PLATE",mouse.x,mouse.y);
-
-        object.update()
-    }
-
-    animate()
-</script>
+    animate();
+  </script>
 </html>
