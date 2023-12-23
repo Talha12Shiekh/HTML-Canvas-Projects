@@ -23,6 +23,9 @@
 
     let mouse = { x: undefined, y: undefined };
 
+   
+
+
     addEventListener("mousemove", (e) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
@@ -35,7 +38,7 @@
         this.color = color;
         this.radius = radius;
         this.velocity = velocity;
-        this.tll = 1000;
+        this.tll = 800;
       }
       draw() {
         c.beginPath();
@@ -53,7 +56,7 @@
 
     let particles = [];
 
-    let particlesCount = 50;
+    let particlesCount = 30;
 
     // let radius = 150;
 
@@ -62,11 +65,15 @@
 
     function init() {
       particles = [];
-      for (let i = 0; i < particlesCount; i++) {
-        let radian = (Math.PI * 2) / particlesCount;
-        hue = Math.sin(hueRadians);
-        let x = canvas.width / 2;
-        let y = canvas.height / 2;
+    }
+
+    function generateRing(){
+        setInterval(generateRing,200)
+        for (let i = 0; i < particlesCount; i++) {
+          let radian = (Math.PI * 2) / particlesCount;
+          hue = Math.sin(hueRadians);
+          let x = mouse.x;
+          let y = mouse.y;
         particles.push(
           new Particle(x, y, `hsl(${Math.abs(hue * 360)},50%,50%)`, 10, {
             x: Math.cos(radian * i),
@@ -75,21 +82,6 @@
         );
       }
       hueRadians += 0.01;
-    }
-
-    function generateRing(){
-        setInterval(generateRing,200)
-        for (let i = 0; i < particlesCount; i++) {
-        let radian = (Math.PI * 2) / particlesCount;
-        let x = mouse.x;
-        let y = mouse.y;
-        particles.push(
-          new Particle(x, y, `hsl(0,50%,50%)`, 10, {
-            x: Math.cos(radian * i),
-            y: Math.sin(radian * i),
-          })
-        );
-      }
     }
 
     generateRing()
@@ -111,5 +103,12 @@
     }
 
     animate();
+
+    addEventListener('resize', () => {
+  canvas.width = innerWidth
+  canvas.height = innerHeight
+
+  init()
+})
   </script>
 </html>

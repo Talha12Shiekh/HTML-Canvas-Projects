@@ -22,6 +22,14 @@
 
     let mouse = {x:undefined,y:undefined}
 
+    addEventListener('resize', () => {
+  canvas.width = innerWidth
+  canvas.height = innerHeight
+
+  init()
+})
+
+
     addEventListener("mousemove",e => {
         mouse.x = e.clientX;
         mouse.y = e.clientY;
