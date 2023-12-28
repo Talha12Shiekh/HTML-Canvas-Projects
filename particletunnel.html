@@ -7,7 +7,7 @@
     <style>
       body {
         overflow: hidden;
-        margin:0;
+        margin: 0;
       }
     </style>
   </head>
@@ -21,14 +21,18 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    let mouse = { x: undefined, y: undefined };
-
-   
-
+    let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 
     addEventListener("mousemove", (e) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
+    });
+
+    addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      init();
     });
 
     class Particle {
@@ -38,13 +42,14 @@
         this.color = color;
         this.radius = radius;
         this.velocity = velocity;
-        this.tll = 800;
+        this.tll = 1000;
       }
       draw() {
         c.beginPath();
-        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
         c.fillStyle = this.color;
         c.fill();
+        c.closePath();
       }
       update() {
         this.draw();
@@ -56,8 +61,6 @@
 
     let particles = [];
 
-    let particlesCount = 30;
-
     // let radius = 150;
 
     let hue = 0;
@@ -67,48 +70,41 @@
       particles = [];
     }
 
-    function generateRing(){
-        setInterval(generateRing,200)
-        for (let i = 0; i < particlesCount; i++) {
-          let radian = (Math.PI * 2) / particlesCount;
-          hue = Math.sin(hueRadians);
-          let x = mouse.x;
-          let y = mouse.y;
+    function generateRing() {
+      setTimeout(generateRing, 1000);
+      let particlesCount = 100;
+      hue = Math.sin(hueRadians);
+      for (let i = 0; i < particlesCount; i++) {
+        let radian = (Math.PI * 2) / particlesCount;
+        let x = mouse.x;
+        let y = mouse.y;
         particles.push(
           new Particle(x, y, `hsl(${Math.abs(hue * 360)},50%,50%)`, 10, {
-            x: Math.cos(radian * i),
-            y: Math.sin(radian * i),
+            x: Math.cos(radian * i) * 3,
+            y: Math.sin(radian * i) * 3,
           })
         );
       }
       hueRadians += 0.01;
     }
 
-    generateRing()
-
-    init();
-
     function animate() {
       requestAnimationFrame(animate);
-      c.fillStyle = "rgba(0,0,0,.1)"
-      c.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
-      particles.forEach((p,index) => {
-        if(p.tll < 0 ){
-            particles.splice(index,1)
+      c.fillStyle = "rgba(0,0,0,0.1)";
+      c.fillRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((particle,index) => {
+        if(particle.tll < 0){
+          particles.splice(index,1)
         }else {
-            p.update()
+          particle.update()
         }
-      });
+      })
     }
 
     animate();
 
-    addEventListener('resize', () => {
-  canvas.width = innerWidth
-  canvas.height = innerHeight
+    generateRing();
 
-  init()
-})
+    init();
   </script>
 </html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Making Galaxy effect</title>
+    <style>
+      body {
+        overflow: hidden;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+  </body>
+  <script>
+    let canvas = document.querySelector("canvas");
+    let c = canvas.getContext("2d");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const COLORS = [
+      "red",
+      "blue",
+      "green",
+      "orange",
+      "pink",
+      "yellow"
+    ]
+
+    let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+
+    addEventListener("resize", () => {
+      canvas.width = innerWidth;
+      canvas.height = innerHeight;
+
+      init();
+    });
+
+
+    class Particle {
+      constructor(x, y, color, radius) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = radius;
+      }
+      draw() {
+        c.beginPath();
+        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+        c.shadowColor = this.color;
+        c.shadowBlur = 15;
+        c.fillStyle = this.color;
+        c.fill();
+      }
+      update() {
+        this.draw();
+      }
+    }
+
+    let particles = [];
+
+    function init() {
+      particles = [];
+      for (let i = 0; i < 400; i++) {
+        let canvasWidth = canvas.width + 300;
+        let canvasHeight = canvas.width + 300;
+        let x = Math.random() * canvasWidth - canvasWidth / 2;
+        let y = Math.random() * canvasHeight - canvasHeight / 2;
+        let radius = 6 * Math.random();
+        let color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        particles.push(new Particle(x,y,color,radius));
+      }
+    }
+
+    init();
+
+    let radians = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      c.fillStyle = `rgba(10,10,10,.1)`
+      c.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+      
+      c.save();
+      c.translate(canvas.width / 2 ,canvas.height / 2)
+      c.rotate(radians);
+      particles.forEach(particle => particle.update());
+      c.restore();
+
+      radians += 0.01;
+
+    }
+
+    animate();
+  </script>
+</html>
