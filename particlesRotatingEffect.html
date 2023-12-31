@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Making Circular effect</title>
+    <style>
+      body {
+        overflow: hidden;
+        background-color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+  </body>
+  <script>
+    let canvas = document.querySelector("canvas");
+    let c = canvas.getContext("2d");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = [
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "pink",
+        "orange"
+    ]
+
+    function randomColor(array) {
+      return array[Math.floor(Math.random() * colors.length)];
+    }
+
+    class Ball {
+      constructor(x, y, color, radius, angle, distance) {
+        this.x = x;
+        this.y = y;
+        this.color = randomColor(colors);
+        this.radius = radius;
+        this.radians = angle;
+        this.distance = distance;
+
+        this.update = () => {
+        
+          this.radians += 0.1
+
+          this.x = x + Math.cos(this.radians) * this.distance;
+          this.y = y + Math.sin(this.radians) * this.distance;
+
+          this.draw();
+        };
+      }
+      draw() {
+        c.beginPath();
+        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+        c.fillStyle = this.color;
+        c.fill();
+      }
+    }
+
+    const COLOR = "red",
+      COUNT = 20,
+      ANGLE_INCREMENT = (Math.PI * 2) / COUNT; // to make total numbers of balls fit inside the circle radius
+
+    let ball = new Ball(canvas.width / 2, canvas.height / 2, COLOR, 10);
+
+    let ballsArray = [];
+
+    function init() {
+      ballsArray = [];
+      for (let j = 0; j <= 5; j++) {
+        let distance = j * 30;
+
+        for (let i = 0; i < COUNT; i++) {
+          const angleIncrement = ANGLE_INCREMENT * i;
+
+          ballsArray.push(
+            new Ball(
+              canvas.width / 2,
+              canvas.height / 2,
+              COLOR,
+              10,
+              angleIncrement,
+              distance
+            )
+          );
+        }
+      }
+    }
+
+    init();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      c.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      ballsArray.forEach((b) => b.update());
+    }
+
+    animate();
+  </script>
+</html>
