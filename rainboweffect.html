@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Making Rainbow effect</title>
+
     <style>
       body {
         overflow: hidden;
@@ -14,6 +15,7 @@
   <body>
     <canvas></canvas>
   </body>
+
   <script>
     let canvas = document.querySelector("canvas");
     let c = canvas.getContext("2d");
@@ -21,7 +23,9 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    let mouse = { x: undefined, y: undefined };
+    const { sin, cos } = Math;
+
+    let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 
     addEventListener("resize", () => {
       canvas.width = innerWidth;
@@ -31,10 +35,9 @@
     });
 
     let centerofcanvas = {
-        x:canvas.width / 2,
-        y:canvas.height / 2
-    }
-
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+    };
 
     let angle = 0;
 
@@ -42,17 +45,22 @@
       mouse.x = e.clientX - centerofcanvas.x;
       mouse.y = e.clientY - centerofcanvas.y;
 
-      angle = Math.atan2(mouse.y,mouse.x)
+      gsap.to(mouse, {
+        x: e.clientX - centerofcanvas.x,
+        y: e.clientY - centerofcanvas.y,
+        duration: 2,
+      });
 
+      angle = Math.atan2(mouse.y, mouse.x);
     });
 
     class Particle {
-      constructor(x, y, color, radius,distanceFromCenter) {
+      constructor(x, y, color, radius, distanceFromCenter) {
         this.x = x;
         this.y = y;
         this.color = color;
         this.radius = radius;
-        this.distanceFromCenter = distanceFromCenter
+        this.distanceFromCenter = distanceFromCenter;
       }
       draw() {
         c.beginPath();
@@ -60,44 +68,64 @@
         c.fillStyle = this.color;
         c.fill();
       }
-      update() {
+      update(timer) {
         this.draw();
 
-        // angle += 0.01;
-        
-        this.x = centerofcanvas.x + this.distanceFromCenter * Math.cos(angle);
-        this.y = centerofcanvas.y + this.distanceFromCenter * Math.sin(angle);
-    }
+        // angle += 0.001;
+
+        let { distanceFromCenter } = this;
+
+        this.x =
+          centerofcanvas.x +
+          distanceFromCenter *
+            cos(-angle) *
+            cos(timer + distanceFromCenter)
+            cos(timer * distanceFromCenter);
+        this.y =
+          centerofcanvas.y +
+          distanceFromCenter *
+            sin(-angle) *
+            sin(timer + distanceFromCenter)
+            sin(timer * distanceFromCenter);
+      }
     }
 
     let particles = [];
-    let totalParticles = 300
+    let totalParticles = 400;
 
     function init() {
       particles = [];
       for (let i = 0; i < totalParticles; i++) {
-        const hueIncrement = 360 / totalParticles; // because 360 is the max value of hue 
-        let x = canvas.width / 2 + i * Math.cos(Math.PI);
-        let y = canvas.height / 2 + i * Math.sin(-Math.PI);
-        particles.push(new Particle(x,y,`hsl(${hueIncrement * i},50%,50%)`,5,i));
-    }
-    console.log(particles)
+        const hueIncrement = 360 / totalParticles; // because 360 is the max value of hue
+        const baseRadius = 3;
+        const radius = baseRadius / totalParticles;
+        let x = canvas.width / 2 + i * cos(Math.PI);
+        let y = canvas.height / 2 + i * sin(-Math.PI);
+        particles.push(
+          // new Particle(x, y, `hsl(${hueIncrement * i},50%,50%)`, baseRadius - radius * i, i)
+          // new Particle(x, y, `hsl(${hueIncrement * i},50%,50%)`, radius * i, i)
+          new Particle(x, y, `hsl(${hueIncrement * i},50%,50%)`, baseRadius, i)
+        );
+      }
     }
 
     init();
 
+    let timer = 0;
+
     function animate() {
       requestAnimationFrame(animate);
-      c.fillStyle = "rgba(0,0,0,.1)"
+      c.fillStyle = "rgba(0,0,0,.1)";
       c.fillRect(0, 0, canvas.width, canvas.height);
-      
 
-      particles.forEach(particle => {
-        particle.update()
-      })
-    
+      particles.forEach((particle) => {
+        particle.update(timer);
+      });
+
+      timer += 0.01;
     }
 
     animate();
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
 </html>
