@@ -69,13 +69,22 @@ addEventListener("click", (event) => {
 });
 
 function spawnEnemies() {
-    setInterval(() => {
+    // setInterval(() => {
         // ! WHEN YOU ARE GETTING A DISTANCE BETWWEN TWO POINTS YOU ALWAYS WANT TO SUBSTRACT FROM THE DESTINATION
+        const  radius = Math.random() * (30 - 5) + 5;
+        let x,y;
 
-        const x = Math.random() * canvas.width,
-            y = Math.random() * canvas.height,
-            radius = 30,
-            color = "green";
+        if(Math.random() < 0.5){
+
+         x = Math.random() < 0.5 ? 0 - radius : (canvas.width) + radius;
+         y = Math.random() * canvas.height;
+        }else {
+            x = Math.random() * canvas.width;
+         y = Math.random() < 0.5 ? 0 - radius : (canvas.height) + radius;;
+        }
+
+        const color = "green";
+         
 
         let angle = Math.atan2(Y_CENTER_OF_CANVAS - y, X_CENTER_OF_CANVAS - x);
 
@@ -84,7 +93,7 @@ function spawnEnemies() {
             y: Math.sin(angle)
         }
         enemies.push(new Enemy(x, y, radius, color, velocity))
-    }, 1000)
+    // }, 1000)
 }
 
 function animate() {
@@ -94,8 +103,20 @@ function animate() {
     projectiles.forEach(prjectile => {
         prjectile.update();
     })
-    enemies.forEach(enemy => {
+    enemies.forEach((enemy,index) => {
         enemy.update();
+
+        projectiles.forEach((pjectile,i) => {
+            let x = pjectile.x - enemy.x;
+            let y = pjectile.y - enemy.y;
+            const distance =  Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+
+
+            if((distance - enemy.radius - pjectile.radius)  < 1){
+                enemies.splice(index,1)
+                projectiles.splice(i,1)
+            }
+        })
     })
     player.draw()
 }

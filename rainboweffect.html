@@ -45,12 +45,6 @@
       mouse.x = e.clientX - centerofcanvas.x;
       mouse.y = e.clientY - centerofcanvas.y;
 
-      gsap.to(mouse, {
-        x: e.clientX - centerofcanvas.x,
-        y: e.clientY - centerofcanvas.y,
-        duration: 2,
-      });
-
       angle = Math.atan2(mouse.y, mouse.x);
     });
 
@@ -78,15 +72,17 @@
         this.x =
           centerofcanvas.x +
           distanceFromCenter *
-            cos(-angle) *
-            cos(timer + distanceFromCenter)
-            cos(timer * distanceFromCenter);
+            cos(angle)
+            //  *
+            // cos(timer + distanceFromCenter)
+            // cos(timer * distanceFromCenter);
         this.y =
           centerofcanvas.y +
           distanceFromCenter *
-            sin(-angle) *
-            sin(timer + distanceFromCenter)
-            sin(timer * distanceFromCenter);
+            sin(angle)
+            //  *
+            // sin(timer + distanceFromCenter)
+            // sin(timer * distanceFromCenter);
       }
     }
 
