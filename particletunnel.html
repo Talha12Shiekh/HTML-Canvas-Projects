@@ -23,10 +23,10 @@
 
     let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
 
-    addEventListener("mousemove", (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    });
+    // addEventListener("mousemove", (e) => {
+    //   mouse.x = e.clientX;
+    //   mouse.y = e.clientY;
+    // });
 
     addEventListener("resize", () => {
       canvas.width = window.innerWidth;
@@ -76,10 +76,10 @@
       hue = Math.sin(hueRadians);
       for (let i = 0; i < particlesCount; i++) {
         let radian = (Math.PI * 2) / particlesCount;
-        let x = mouse.x;
-        let y = mouse.y;
+        // let x = mouse.x;
+        // let y = mouse.y;
         particles.push(
-          new Particle(x, y, `hsl(${Math.abs(hue * 360)},50%,50%)`, 10, {
+          new Particle(canvas.width/2, canvas.height/2, `hsl(${Math.abs(hue * 360)},50%,50%)`, 10, {
             x: Math.cos(radian * i) * 3,
             y: Math.sin(radian * i) * 3,
           })
