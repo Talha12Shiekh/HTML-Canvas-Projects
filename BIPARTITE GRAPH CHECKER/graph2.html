@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graph Bipartiteness Checker</title>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      font-family: "Poppins", sans-serif;
+    }
+
+    h1 {
+      color: #2c3e50;
+    }
+
+    #tools {
+      margin-top: 30px;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-right: 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+      font-family: "Poppins", sans-serif;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    #graphCanvas, #diagramCanvas {
+      margin-top: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      background-color: #fff;
+      border: 1px solid black;
+    }
+
+    #graphMessage, #diagramMessage, #result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #555;
+      text-align: center;
+    }
+
+    #result {
+      font-size: 20px;
+      font-weight: bold;
+      color: #e74c3c;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .canvas-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .paragraphs_container{
+      display: flex;
+      justify-content: space-between;
+      width: 90%;
+      margin: auto;
+    }
+
+    .single-text-container{
+      width: 100%;
+    }
+
+    .name{
+        font-size: 10px;
+        text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <h1>Graph Bipartiteness Checker</h1>
+  <div id="tools" class="button-container">
+    <button id="vertexTool">Vertex Tool</button>
+    <button id="edgeTool">Edge Tool</button>
+    <button id="eraseTool">Erase Tool</button>
+    <button id="clearGraph">Clear Graph</button>
+    <button id="checkBipartite">Check Bipartiteness</button>
+  </div>
+ 
+  <div class="canvas-container">
+    <canvas id="graphCanvas" width="600" height="400"></canvas>
+    <canvas id="diagramCanvas" width="600" height="400"></canvas>
+  </div>
+  <div class="paragraphs_container">
+    <div class="single-text-container">
+
+      <p id="graphMessage">Draw your graph here</p>
+    </div>
+    <div class="single-text-container">
+
+      <p id="diagramMessage">Mapping diagram will appear here </p>
+    </div>
+  </div>
+  <div class="download_btns_container paragraphs_container">
+    <div class="single-text-container">
+
+        <button id="d_graph">Download graph</button>
+    </div>
+    <div class="single-text-container">
+        
+        <button id="d_diagram">Download Diagram</button>
+    </div>
+  </div>
+  <p id="result"></p>
+
+  <div class="name">Made by : Talha Khurram</div>
+
+  <script>
+    // Get references to canvases, tools, and buttons
+    const graphCanvas = document.getElementById("graphCanvas");
+    const diagramCanvas = document.getElementById("diagramCanvas");
+    const ctxGraph = graphCanvas.getContext("2d");
+    const ctxDiagram = diagramCanvas.getContext("2d");
+
+    // Tools and Buttons
+    const vertexTool = document.getElementById("vertexTool");
+    const edgeTool = document.getElementById("edgeTool");
+    const checkBipartite = document.getElementById("checkBipartite");
+    const clearGraph = document.getElementById("clearGraph");
+    const eraseTool = document.getElementById("eraseTool");
+
+    // Messages and Result
+    const graphMessage = document.getElementById("graphMessage");
+    const diagramMessage = document.getElementById("diagramMessage");
+    const result = document.getElementById("result");
+    const graphdwnldbtn = document.getElementById("d_graph");
+    const dgrmdwnldbtn = document.getElementById("d_diagram");
+
+    // State
+    let vertices = [];
+    let edges = [];
+    let currentTool = "vertex";
+    let draggingVertex = null;
+
+    // Utility: Clear canvas
+    function clearCanvas(ctx, canvas) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    eraseTool.addEventListener("click", () => {
+  currentTool = "erase";
+  graphMessage.textContent = "Click on a vertex or edge to erase";
+});
+
+function eraseVertex(x, y) {
+  const vertexIndex = vertices.findIndex((v) => Math.hypot(v.x - x, v.y - y) <= 15);
+  if (vertexIndex !== -1) {
+    const vertexToRemove = vertices[vertexIndex];
+    vertices.splice(vertexIndex, 1); // Remove vertex from the array
+
+    // Remove edges connected to this vertex
+    edges = edges.filter(edge => edge.v1 !== vertexToRemove && edge.v2 !== vertexToRemove);
+
+    // Redraw graph without the erased vertex and edges
+    clearCanvas(ctxGraph, graphCanvas);
+    vertices.forEach((v) => drawVertex(v.x, v.y, v.id));
+    edges.forEach((edge) => drawEdge(edge.v1, edge.v2));
+  }
+}
+
+function eraseEdge(x, y) {
+  const edgeIndex = edges.findIndex((edge) => {
+    const midX = (edge.v1.x + edge.v2.x) / 2;
+    const midY = (edge.v1.y + edge.v2.y) / 2;
+    return Math.hypot(midX - x, midY - y) <= 15; // Check if the point is near the middle of the edge
+  });
+
+  if (edgeIndex !== -1) {
+    edges.splice(edgeIndex, 1); // Remove edge from the array
+    // Redraw graph without the erased edge
+    clearCanvas(ctxGraph, graphCanvas);
+    vertices.forEach((v) => drawVertex(v.x, v.y, v.id));
+    edges.forEach((edge) => drawEdge(edge.v1, edge.v2));
+  }
+}
+
+    // Draw vertex with color
+    function drawVertex(x, y, id, color = "white") {
+      ctxGraph.beginPath();
+      ctxGraph.arc(x, y, 15, 0, Math.PI * 2);
+      ctxGraph.fillStyle = color;
+      ctxGraph.fill();
+      ctxGraph.strokeStyle = "black";
+      ctxGraph.lineWidth = 2;
+      ctxGraph.stroke();
+      ctxGraph.font = "14px Arial";
+      ctxGraph.fillStyle = "black";
+      ctxGraph.fillText(id, x - 5, y + 5);
+    }
+
+    // Draw edge
+    function drawEdge(v1, v2) {
+      ctxGraph.beginPath();
+      ctxGraph.moveTo(v1.x, v1.y);
+      ctxGraph.lineTo(v2.x, v2.y);
+      ctxGraph.strokeStyle = "black";
+      ctxGraph.lineWidth = 2;
+      ctxGraph.stroke();
+    }
+
+    // Add a vertex
+    graphCanvas.addEventListener("click", (e) => {
+  if (currentTool !== "vertex") return;
+
+  const rect = graphCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  // Change to use alphabets for IDs
+  const alphabet = "abcdefghijklmnopqrstuvwxyz";
+  const id = alphabet[vertices.length % 26]; // Loop back to 'a' after 'z'
+
+  vertices.push({ x, y, id });
+  clearCanvas(ctxGraph, graphCanvas);
+  vertices.forEach((v) => drawVertex(v.x, v.y, v.id));
+  edges.forEach((edge) => drawEdge(edge.v1, edge.v2));
+});
+
+graphCanvas.addEventListener("click", (e) => {
+  if (currentTool !== "erase") return;
+
+  const rect = graphCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  // First, try to erase a vertex
+  eraseVertex(x, y);
+  // If no vertex was erased, try to erase an edge
+  eraseEdge(x, y);
+});
+    // Add an edge
+    let startVertex = null;
+    graphCanvas.addEventListener("mousedown", (e) => {
+      if (currentTool !== "edge") return;
+
+      const rect = graphCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      startVertex = vertices.find((v) => Math.hypot(v.x - x, v.y - y) <= 15);
+    });
+
+    graphCanvas.addEventListener("mouseup", (e) => {
+      if (!startVertex || currentTool !== "edge") return;
+
+      const rect = graphCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const endVertex = vertices.find((v) => Math.hypot(v.x - x, v.y - y) <= 15);
+
+      if (endVertex && startVertex !== endVertex) {
+        edges.push({ v1: startVertex, v2: endVertex });
+        clearCanvas(ctxGraph, graphCanvas);
+        vertices.forEach((v) => drawVertex(v.x, v.y, v.id));
+        edges.forEach((edge) => drawEdge(edge.v1, edge.v2));
+      }
+      startVertex = null;
+    });
+
+    // Event Listeners for Tools
+    vertexTool.addEventListener("click", () => (currentTool = "vertex"));
+    edgeTool.addEventListener("click", () => (currentTool = "edge"));
+    clearGraph.addEventListener("click", () => {
+      vertices = [];
+      edges = [];
+      clearCanvas(ctxGraph, graphCanvas);
+      clearCanvas(ctxDiagram, diagramCanvas);
+      graphMessage.textContent = "Draw your graph here...";
+      diagramMessage.textContent = "Mapping diagram will appear here after checking bipartiteness...";
+      result.textContent = "";
+    });
+    checkBipartite.addEventListener("click", checkIfBipartite);
+
+    // Function to check if the graph is bipartite and display mapping diagram
+    function checkIfBipartite() {
+      if (vertices.length === 0) {
+        result.textContent = "Draw a graph first!";
+        return;
+      }
+
+      // Bipartite check using BFS
+      const color = new Map(); // To store colors of vertices (0 or 1)
+      const adjacencyList = buildAdjacencyList(vertices, edges);
+      let isBipartite = true;
+
+      function bfs(startVertex) {
+        const queue = [startVertex];
+        color.set(startVertex.id, 0);
+
+        while (queue.length > 0) {
+          const current = queue.shift();
+          const currentColor = color.get(current.id);
+
+          for (const neighbor of adjacencyList.get(current.id)) {
+            if (!color.has(neighbor)) {
+              color.set(neighbor, 1 - currentColor);
+              queue.push(vertices.find((v) => v.id === neighbor));
+            } else if (color.get(neighbor) === currentColor) {
+              isBipartite = false;
+              return;
+            }
+          }
+        }
+      }
+
+      for (const vertex of vertices) {
+        if (!color.has(vertex.id)) {
+          bfs(vertex);
+          if (!isBipartite) break;
+        }
+      }
+
+      // Change vertex colors based on bipartiteness
+      if (!isBipartite) {
+        result.textContent = "The graph is NOT bipartite!";
+        vertices.forEach((v) => drawVertex(v.x, v.y, v.id, "red"));  // Mark vertices in red
+      } else {
+        result.textContent = "The graph is bipartite!";
+        vertices.forEach((v) => {
+          const vertexColor = color.get(v.id) === 0 ? "blue" : "red";
+          drawVertex(v.x, v.y, v.id, vertexColor);
+        });
+      }
+      drawMappingDiagram(color);
+    }
+
+    // Build adjacency list for vertices and edges
+    function buildAdjacencyList(vertices, edges) {
+      const adjacencyList = new Map();
+      vertices.forEach((v) => adjacencyList.set(v.id, []));
+      edges.forEach((edge) => {
+        adjacencyList.get(edge.v1.id).push(edge.v2.id);
+        adjacencyList.get(edge.v2.id).push(edge.v1.id);
+      });
+      return adjacencyList;
+    }
+
+    // Function to draw the bipartite mapping diagram
+    function drawMappingDiagram(colorMap) {
+      clearCanvas(ctxDiagram, diagramCanvas);
+      const partition1 = [];
+      const partition2 = [];
+
+      // Separate vertices into partitions based on color
+      colorMap.forEach((color, id) => {
+        if (color === 0) {
+          partition1.push(vertices.find((v) => v.id === id));
+        } else {
+          partition2.push(vertices.find((v) => v.id === id));
+        }
+      });
+
+      // Draw partitions and edges
+      const startX1 = 100, startX2 = 400;
+      let startY1 = 100, startY2 = 100;
+
+      // Draw vertices in Partition 1
+      partition1.forEach((v) => {
+        drawVertexDiagram(ctxDiagram, startX1, startY1, v.id, "blue");
+        v.diagramX = startX1; v.diagramY = startY1; // Save coordinates for edges
+        startY1 += 70;
+      });
+
+      // Draw vertices in Partition 2
+      partition2.forEach((v) => {
+        drawVertexDiagram(ctxDiagram, startX2, startY2, v.id, "red");
+        v.diagramX = startX2; v.diagramY = startY2; // Save coordinates for edges
+        startY2 += 70;
+      });
+
+      // Draw edges between partitions
+      edges.forEach((edge) => {
+        ctxDiagram.beginPath();
+        ctxDiagram.moveTo(edge.v1.diagramX, edge.v1.diagramY);
+        ctxDiagram.lineTo(edge.v2.diagramX, edge.v2.diagramY);
+        ctxDiagram.strokeStyle = "black";
+        ctxDiagram.lineWidth = 2;
+        ctxDiagram.stroke();
+      });
+
+      diagramMessage.textContent = "Mapping diagram of the bipartite graph:";
+    }
+
+    // Utility function to draw a vertex in diagram canvas
+    function drawVertexDiagram(ctx, x, y, id, color) {
+      ctx.beginPath();
+      ctx.arc(x, y, 15, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = "white";
+      ctx.font = "14px Arial";
+      ctx.fillText(id, x - 5, y + 5);
+    }
+
+
+    // Add an event listener for mouse move
+graphCanvas.addEventListener("mousemove", (e) => {
+  if (!startVertex || currentTool !== "edge") return;
+
+  const rect = graphCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  // Clear the canvas and redraw the vertices and edges
+  clearCanvas(ctxGraph, graphCanvas);
+  vertices.forEach((v) => drawVertex(v.x, v.y, v.id));
+  edges.forEach((edge) => drawEdge(edge.v1, edge.v2));
+
+  // Draw the edge from the start vertex to the current mouse position
+  ctxGraph.beginPath();
+  ctxGraph.moveTo(startVertex.x, startVertex.y);
+  ctxGraph.lineTo(x, y);
+  ctxGraph.strokeStyle = "black";
+  ctxGraph.lineWidth = 2;
+  ctxGraph.stroke();
+});
+
+// Modify the mousedown event to initiate the drag
+graphCanvas.addEventListener("mousedown", (e) => {
+  if (currentTool !== "edge") return;
+
+  const rect = graphCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  // Find the start vertex
+  startVertex = vertices.find((v) => Math.hypot(v.x - x, v.y - y) <= 15);
+});
+
+// Modify the mouseup event to finalize the edge
+graphCanvas.addEventListener("mouseup", (e) => {
+  if (!startVertex || currentTool !== "edge") return;
+
+  const rect = graphCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  // Find the end vertex
+  const endVertex = vertices.find((v) => Math.hypot(v.x - x, v.y - y) <= 15);
+
+  if (endVertex && startVertex !== endVertex) {
+    // Add the edge to the edges array
+    edges.push({ v1: startVertex, v2: endVertex });
+    clearCanvas(ctxGraph, graphCanvas);
+    vertices.forEach((v) => drawVertex(v.x, v.y, v.id));
+    edges.forEach((edge) => drawEdge(edge.v1, edge.v2));
+  }
+  // Reset startVertex for the next edge
+  startVertex = null;
+});
+
+graphdwnldbtn.addEventListener("click", () => {
+      const image = graphCanvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = image;
+      link.download = "graph.png";
+      link.click();
+    });
+
+    // Download image of the diagram canvas
+    dgrmdwnldbtn.addEventListener("click", () => {
+      const image = diagramCanvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = image;
+      link.download = "mapping_diagram.png";
+      link.click();
+    });
+
+  </script>
+</body>
+</html>
